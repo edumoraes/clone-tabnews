@@ -1,17 +1,39 @@
-import { Client } from "pg";
+import { Pool } from "pg";
+
+const config = {
+  host: process.env.POSTGRES_HOST,
+  port: process.env.POSTGRES_PORT,
+  user: process.env.POSTGRES_USER,
+  database: process.env.POSTGRES_DB,
+  password: process.env.POSTGRES_PASSWORD,
+}
 
 async function query(queryObject) {
-  const client = new Client({
-    host: process.env.POSTGRES_HOST,
-    port: process.env.POSTGRES_PORT,
-    user: process.env.POSTGRES_USER,
-    database: process.env.POSTGRES_DB,
-    password: process.env.POSTGRES_PASSWORD,
-  });
-  await client.connect();
-  const result = await client.query(queryObject);
-  await client.end();
-  return result;
+  const pool = new Pool(config);
+
+  pool.on('error', (err, client) => {
+    console.error('Unexpected error on idle client', err);
+    process.exit(-1)
+  })
+
+  const client = await pool.connect();  
+  try {
+    const result = await client.query(queryObject);
+    
+    return result;
+    
+  } catch (error) {
+    console.error(error);
+    
+  } finally {
+    
+    client.release();
+    await pool.end();
+  }
+
+    
+    
+  
 }
 
 export default {
