@@ -16,14 +16,18 @@ async function query(queryObject) {
     process.exit(-1)
   })
 
-  const client = await pool.connect();  
+  let client;
+
   try {
+
+    client = await pool.connect();
     const result = await client.query(queryObject);
     
     return result;
     
   } catch (error) {
     console.error(error);
+    throw error;
     
   } finally {
     
