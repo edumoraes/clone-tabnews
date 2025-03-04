@@ -3,6 +3,13 @@ import { join } from "node:path";
 import database from "infra/database";
 
 export default async function migrations(req, res) {
+  const allowedMethods = ["GET", "POST"];
+  if (!allowedMethods.includes(req.method)) {
+    return res.status(405).json({
+      error: `Method "${req.method}" not allowed`,
+    });
+  }
+
   const connection = await database.getConnection();
 
   const defaultMigrationOptions = {
@@ -14,28 +21,27 @@ export default async function migrations(req, res) {
     migrationsTable: "pgmigrations",
   };
 
-  if (req.method === "GET") {
-    const pendingMigrations = await migrationRunner(defaultMigrationOptions);
-
-    connection.client.release();
-    await connection.pool.end();
-
-    return res.status(200).json(pendingMigrations);
-  }
-  if (req.method === "POST") {
-    const migratedMigrations = await migrationRunner({
-      ...defaultMigrationOptions,
-      dryRun: false,
-    });
-
-    connection.client.release();
-    await connection.pool.end();
-
-    if (migratedMigrations.length > 0) {
-      return res.status(201).json(migratedMigrations);
+  try {
+    if (req.method === "GET") {
+      const pendingMigrations = await migrationRunner(defaultMigrationOptions);
+      return res.status(200).json(pendingMigrations);
     }
-    return res.status(200).json(migratedMigrations);
-  }
+    if (req.method === "POST") {
+      const migratedMigrations = await migrationRunner({
+        ...defaultMigrationOptions,
+        dryRun: false,
+      });
 
-  return res.status(405);
+      if (migratedMigrations.length > 0) {
+        return res.status(201).json(migratedMigrations);
+      }
+      return res.status(200).json(migratedMigrations);
+    }
+  } catch (error) {
+    console.error(error);
+    throw error;
+  } finally {
+    connection.client.release();
+    await connection.pool.end();
+  }
 }
