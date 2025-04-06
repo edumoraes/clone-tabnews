@@ -30,7 +30,7 @@ async function query(queryObject) {
 async function getConnection() {
   const pool = new Pool(config);
 
-  pool.on("error", (err, client) => {
+  pool.on("error", (err) => {
     console.error("Unexpected error on idle client", err);
     process.exit(-1);
   });
@@ -39,7 +39,8 @@ async function getConnection() {
 
   return { pool: pool, client: client };
 }
-export default {
+const database = {
   query,
   getConnection,
 };
+export default database;

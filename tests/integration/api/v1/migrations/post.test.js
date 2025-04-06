@@ -1,5 +1,4 @@
 import database from "infra/database";
-import { DatabaseError } from "pg";
 import orchestrator from "tests/orchestrator.js";
 
 beforeAll(async () => {
