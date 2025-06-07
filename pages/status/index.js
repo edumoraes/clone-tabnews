@@ -21,19 +21,23 @@ function UpdatedAt() {
   });
 
   let updatedAt = "Carregando...";
+  let dbVersion = "Carregando...";
+  let maxConnections = "Carregando...";
+  let openedConnections = "Carregando";
 
   if (!isLoading && data) {
     updatedAt = new Date(data.updated_at).toLocaleString("pt-BR");
+    dbVersion = data.dependencies.database.version;
+    maxConnections = data.dependencies.database.max_connections;
+    openedConnections = data.dependencies.database.opened_connections;
   }
 
   return (
     <>
       <div>Útima atualização: {updatedAt}</div>
-      <div>Versão do banco: {data.dependencies.database.version}</div>
-      <div>Conexões máximas: {data.dependencies.database.max_connections}</div>
-      <div>
-        Conexões em uso: {data.dependencies.database.opened_connections}
-      </div>
+      <div>Versão do banco: {dbVersion}</div>
+      <div>Conexões máximas: {maxConnections}</div>
+      <div>Conexões em uso: {openedConnections}</div>
     </>
   );
 }
