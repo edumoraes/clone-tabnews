@@ -19,11 +19,12 @@ async function query(queryObject) {
     const result = await client.query(queryObject);
     return result;
   } catch (error) {
+    console.log("\n Erro no log do database.js");
     console.error(error);
     throw error;
   } finally {
-    client.release();
-    await connection.pool.end();
+    client?.release();
+    await connection?.pool.end();
   }
 }
 
